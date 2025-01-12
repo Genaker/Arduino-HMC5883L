@@ -30,13 +30,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 bool HMC5883L::begin()
 {
-    Wire.begin();
+    Wire1.begin();
 
-    if ((fastRegister8(HMC5883L_REG_IDENT_A) != 0x48)
-    || (fastRegister8(HMC5883L_REG_IDENT_B) != 0x34)
-    || (fastRegister8(HMC5883L_REG_IDENT_C) != 0x33))
+    if ((fastRegister8(HMC5883L_REG_IDENT_A) != 0x48) ||
+        (fastRegister8(HMC5883L_REG_IDENT_B) != 0x34) ||
+        (fastRegister8(HMC5883L_REG_IDENT_C) != 0x33))
     {
-	return false;
+        return false;
     }
 
     setRange(HMC5883L_RANGE_1_3GA);
@@ -76,42 +76,42 @@ void HMC5883L::setOffset(int xo, int yo, int zo)
 
 void HMC5883L::setRange(hmc5883l_range_t range)
 {
-    switch(range)
+    switch (range)
     {
-	case HMC5883L_RANGE_0_88GA:
-	    mgPerDigit = 0.073f;
-	    break;
+    case HMC5883L_RANGE_0_88GA:
+        mgPerDigit = 0.073f;
+        break;
 
-	case HMC5883L_RANGE_1_3GA:
-	    mgPerDigit = 0.92f;
-	    break;
+    case HMC5883L_RANGE_1_3GA:
+        mgPerDigit = 0.92f;
+        break;
 
-	case HMC5883L_RANGE_1_9GA:
-	    mgPerDigit = 1.22f;
-	    break;
+    case HMC5883L_RANGE_1_9GA:
+        mgPerDigit = 1.22f;
+        break;
 
-	case HMC5883L_RANGE_2_5GA:
-	    mgPerDigit = 1.52f;
-	    break;
+    case HMC5883L_RANGE_2_5GA:
+        mgPerDigit = 1.52f;
+        break;
 
-	case HMC5883L_RANGE_4GA:
-	    mgPerDigit = 2.27f;
-	    break;
+    case HMC5883L_RANGE_4GA:
+        mgPerDigit = 2.27f;
+        break;
 
-	case HMC5883L_RANGE_4_7GA:
-	    mgPerDigit = 2.56f;
-	    break;
+    case HMC5883L_RANGE_4_7GA:
+        mgPerDigit = 2.56f;
+        break;
 
-	case HMC5883L_RANGE_5_6GA:
-	    mgPerDigit = 3.03f;
-	    break;
+    case HMC5883L_RANGE_5_6GA:
+        mgPerDigit = 3.03f;
+        break;
 
-	case HMC5883L_RANGE_8_1GA:
-	    mgPerDigit = 4.35f;
-	    break;
+    case HMC5883L_RANGE_8_1GA:
+        mgPerDigit = 4.35f;
+        break;
 
-	default:
-	    break;
+    default:
+        break;
     }
 
     writeRegister8(HMC5883L_REG_CONFIG_B, range << 5);
@@ -189,50 +189,50 @@ hmc5883l_samples_t HMC5883L::getSamples(void)
 
 Vector HMC5883L::selfTest()
 {
-	Vector value;
-	
-	setMeasurementMode(HMC5883L_SINGLE);
-	writeRegister8(HMC5883L_REG_CONFIG_A, 0x00);
-	writeRegister8(HMC5883L_REG_CONFIG_A, 0x01);
-	value = readRaw();
-	writeRegister8(HMC5883L_REG_CONFIG_A, 0x00);
-	
-	return value;
+    Vector value;
+
+    setMeasurementMode(HMC5883L_SINGLE);
+    writeRegister8(HMC5883L_REG_CONFIG_A, 0x00);
+    writeRegister8(HMC5883L_REG_CONFIG_A, 0x01);
+    value = readRaw();
+    writeRegister8(HMC5883L_REG_CONFIG_A, 0x00);
+
+    return value;
 }
 
 // Write byte to register
 void HMC5883L::writeRegister8(uint8_t reg, uint8_t value)
 {
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-        Wire.write(value);
-    #else
-        Wire.send(reg);
-        Wire.send(value);
-    #endif
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+#if ARDUINO >= 100
+    Wire1.write(reg);
+    Wire1.write(value);
+#else
+    Wire1.send(reg);
+    Wire1.send(value);
+#endif
+    Wire1.endTransmission();
 }
 
 // Read byte to register
 uint8_t HMC5883L::fastRegister8(uint8_t reg)
 {
     uint8_t value;
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+#if ARDUINO >= 100
+    Wire1.write(reg);
+#else
+    Wire1.send(reg);
+#endif
+    Wire1.endTransmission();
 
-    Wire.requestFrom(HMC5883L_ADDRESS, 1);
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif;
-    Wire.endTransmission();
+    Wire1.requestFrom(HMC5883L_ADDRESS, 1);
+#if ARDUINO >= 100
+    value = Wire1.read();
+#else
+    value = Wire1.receive();
+#endif;
+    Wire1.endTransmission();
 
     return value;
 }
@@ -241,23 +241,25 @@ uint8_t HMC5883L::fastRegister8(uint8_t reg)
 uint8_t HMC5883L::readRegister8(uint8_t reg)
 {
     uint8_t value;
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+#if ARDUINO >= 100
+    Wire1.write(reg);
+#else
+    Wire1.send(reg);
+#endif
+    Wire1.endTransmission();
 
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    Wire.requestFrom(HMC5883L_ADDRESS, 1);
-    while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        value = Wire.read();
-    #else
-        value = Wire.receive();
-    #endif;
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+    Wire1.requestFrom(HMC5883L_ADDRESS, 1);
+    while (!Wire1.available())
+    {
+    };
+#if ARDUINO >= 100
+    value = Wire1.read();
+#else
+    value = Wire1.receive();
+#endif;
+    Wire1.endTransmission();
 
     return value;
 }
@@ -266,25 +268,27 @@ uint8_t HMC5883L::readRegister8(uint8_t reg)
 int16_t HMC5883L::readRegister16(uint8_t reg)
 {
     int16_t value;
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    #if ARDUINO >= 100
-        Wire.write(reg);
-    #else
-        Wire.send(reg);
-    #endif
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+#if ARDUINO >= 100
+    Wire1.write(reg);
+#else
+    Wire1.send(reg);
+#endif
+    Wire1.endTransmission();
 
-    Wire.beginTransmission(HMC5883L_ADDRESS);
-    Wire.requestFrom(HMC5883L_ADDRESS, 2);
-    while(!Wire.available()) {};
-    #if ARDUINO >= 100
-        uint8_t vha = Wire.read();
-        uint8_t vla = Wire.read();
-    #else
-        uint8_t vha = Wire.receive();
-        uint8_t vla = Wire.receive();
-    #endif;
-    Wire.endTransmission();
+    Wire1.beginTransmission(HMC5883L_ADDRESS);
+    Wire1.requestFrom(HMC5883L_ADDRESS, 2);
+    while (!Wire1.available())
+    {
+    };
+#if ARDUINO >= 100
+    uint8_t vha = Wire1.read();
+    uint8_t vla = Wire1.read();
+#else
+    uint8_t vha = Wire1.receive();
+    uint8_t vla = Wire1.receive();
+#endif;
+    Wire1.endTransmission();
 
     value = vha << 8 | vla;
 
